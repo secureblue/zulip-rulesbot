@@ -1,5 +1,5 @@
 {
-	"name": "hello-python",
+	"name": "zulip-rulesbot",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
