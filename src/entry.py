@@ -11,6 +11,7 @@ MEMBER_GROUP: Final[int] = 1522351
 
 class RulesHandler:
     def handle_message(self, message: dict[str, Any], bot_handler: AbstractBotHandler, client: Client) -> None:
+        content = message["content"].removeprefix("@**RulesBot**").strip()
         if content != "I agree to the rules":
             content = "Not a valid command. Send \"I agree to the rules\" to be granted server access."
             bot_handler.send_reply(message, content)
@@ -24,17 +25,22 @@ class RulesHandler:
         )
         sender_user_id = sender_user["user"]["user_id"]
         sender_user_fullname = sender_user["user"]["full_name"]
-        current_agreement_status = bot_handler.storage.get(sender_user_id)
+        try:
+            current_agreement_status = bot_handler.storage.get(str(sender_user_id))
+        except KeyError:
+            current_agreement_status = None
         if current_agreement_status == AGREEMENT_STATUS_STRING:
-            content = "You have already agreed to the rules"
+            content = "You have already agreed to the rules."
             bot_handler.send_reply(message, content)
             bot_handler.react(message, "check")
             return
 
         onboard_user_request_params = {
-            "add": [int(user_id)]
+            "add": [sender_user_id]
         }
         onboard_user_response = client.update_user_group_members(MEMBER_GROUP, onboard_user_request_params)
+        bot_handler.react(message, "check")
+        content = "You have been granted server access."
         if onboard_user_response["result"] != "success":
             onboard_response_error = onboard_user_response["msg"]          
             client.send_message(dict(
@@ -43,9 +49,9 @@ class RulesHandler:
                 subject="Errors",
                 content=onboard_response_error,
             ))
-            raise Exception(untimeout_response["msg"])
+            raise Exception(onboard_user_response["msg"])
         
-        bot_handler.storage.put(sender_user_id, AGREEMENT_STATUS_STRING)
+        bot_handler.storage.put(str(sender_user_id), AGREEMENT_STATUS_STRING)
         onboarding_log_message = f"User @**{sender_user_fullname}|{sender_user_id}** has agreed to the rules."
         client.send_message(dict(
             type='stream',
