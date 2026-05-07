@@ -1,3 +1,3 @@
-# zulip-python-bot-cloudflare-example
+# zulip-rulesbot
 
-Zulip python bot Hello World running on Cloudflare Workers
+Rules bot for our zulip server
