@@ -1,5 +1,5 @@
 [project]
-name = "hello-python"
+name = "zulip-rulesbot"
 version = "0.1.0"
 description = "Python hello world worker"
 readme = "README.md"
